@@ -4,10 +4,26 @@ from dotenv import load_dotenv
 from together import Together
 import discord
 from discord.ext import commands
+from threading import Thread
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
-# Healthcheck
-import healthcheck
-healthcheck.start()
+# Simple healthcheck server (works in Python 3.12)
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/health":
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"OK")
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+def start_health_server():
+    server = HTTPServer(("0.0.0.0", 8080), HealthHandler)
+    server.serve_forever()
+
+Thread(target=start_health_server, daemon=True).start()
 
 # Load env
 load_dotenv()
@@ -100,7 +116,6 @@ class AIChannelCog(commands.Cog):
 
         reply_text = get_ai_response(combined_prompt)
 
-        # Reply tagging the user who sent the message to keep it clear
         bot_msg = await message.reply(reply_text)
         self.message_context[bot_msg.id] = original_prompt if original_prompt else message.content
 
