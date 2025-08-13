@@ -27,8 +27,8 @@ Thread(target=start_health_server, daemon=True).start()
 
 # Load env
 load_dotenv()
-DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
-client = Together(api_key=os.getenv("TOGETHER_API_KEY"))
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN", "").strip()
+client = Together(api_key=os.getenv("TOGETHER_API_KEY", "").strip())
 
 BOT_PREFIX = '.'
 
